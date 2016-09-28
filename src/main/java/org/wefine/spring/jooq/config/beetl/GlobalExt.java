@@ -1,4 +1,4 @@
-package com.zte.zxjos.rcs.server.config.beetl;
+package org.wefine.spring.jooq.config.beetl;
 
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.Template;

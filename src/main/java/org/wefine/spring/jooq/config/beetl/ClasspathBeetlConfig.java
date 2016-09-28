@@ -1,4 +1,4 @@
-package com.zte.zxjos.rcs.server.config.beetl;
+package org.wefine.spring.jooq.config.beetl;
 
 import org.beetl.ext.spring.BeetlGroupUtilConfiguration;
 import org.beetl.ext.spring.BeetlSpringViewResolver;
@@ -26,7 +26,7 @@ public class ClasspathBeetlConfig {
     public ViewResolver viewResolver() {
         BeetlSpringViewResolver viewResolver = new BeetlSpringViewResolver();
         viewResolver.setOrder(0);
-        viewResolver.setPrefix("/templates");
+        viewResolver.setPrefix("/templates/");
         viewResolver.setSuffix(".html");
         viewResolver.setContentType("text/html;charset=UTF-8");
 

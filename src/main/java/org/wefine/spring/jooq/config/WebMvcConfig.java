@@ -7,10 +7,10 @@ import org.wefine.spring.jooq.web.repo.InMemoryMessageRepository;
 import org.wefine.spring.jooq.web.repo.MessageRepository;
 
 @Configuration
-public class MvcConfig {
+public class WebMvcConfig {
 
     @Bean
-    public MessageRepository messageRepository(){
+    public MessageRepository messageRepository() {
         return new InMemoryMessageRepository();
     }
 }

@@ -1,4 +1,4 @@
-package com.zte.zxjos.rcs.server.config.beetl;
+package org.wefine.spring.jooq.config.beetl;
 
 public class ClasspathResourceLoader extends org.beetl.core.resource.ClasspathResourceLoader {
     private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
