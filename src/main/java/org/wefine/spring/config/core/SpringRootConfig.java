@@ -7,7 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @ImportResource(locations = {
         "classpath*:/META-INF/spring/*-config.xml",
-        "classpath:spring-datasource.xml"
+        "classpath*:spring-datasource.xml"
 })
 @PropertySource({
         "classpath:application.properties"

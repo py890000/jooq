@@ -80,10 +80,6 @@ public class BlogService {
 
         comment.setId(commentsRecord.getId());
 
-        if (true) {
-            throw new RuntimeException();
-        }
-
         return comment;
     }
 
