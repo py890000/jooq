@@ -88,16 +88,42 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
         </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${servlet.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -325,7 +351,7 @@
 
                             <!-- Generate DAOs in addition to POJO classes
                                  Defaults to false -->
-                            <daos>true</daos>
+                            <daos>false</daos>
 
                             <!-- Annotate POJOs and Records with JPA annotations for increased
                                  compatibility and better integration with JPA/Hibernate, etc

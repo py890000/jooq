@@ -3,7 +3,7 @@ package org.wefine.spring.config.core;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.convert.ConversionService;
@@ -19,9 +19,7 @@ import java.util.regex.Pattern;
 @ComponentScan({
         "org.wefine.spring.web"
 })
-@PropertySource({
-        "classpath:application.properties"
-})
+@ImportResource(locations = {"classpath:spring-viewsolver.xml"})
 public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 
     /**
