@@ -1,54 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.wefine.spring.jooq</groupId>
-	<artifactId>jooq</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <groupId>org.wefine.spring.jooq</groupId>
+    <artifactId>jooq</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
 
-	<name>jooq</name>
-	<description>Spring Boot JOOQ Example</description>
+    <name>jooq</name>
+    <description>Spring Boot JOOQ Example</description>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.1.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.4.1.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-		<maven.test.skip>true</maven.test.skip>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <maven.test.skip>true</maven.test.skip>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jooq</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jooq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
 
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.ibeetl</groupId>
@@ -56,21 +60,183 @@
             <version>2.5.2</version>
         </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0-alpha-2</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>src/main/resources/application.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <dependencies>
+                    <!-- 数据库依赖  -->
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${mysql.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <!-- 触发任务及目标  -->
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <!-- 数据库配置 -->
+                    <jdbc>
+                        <driver>com.mysql.jdbc.Driver</driver>
+                        <url>${spring.datasource.url}</url>
+                        <user>${spring.datasource.username}</user>
+                        <password>${spring.datasource.password}</password>
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.util.mysql.MySQLDatabase</name>
+                            <!-- 生成代码的数据库名称 -->
+                            <inputSchema>${db.schema}</inputSchema>
+                            <!-- 包含的表 -->
+                            <includes>.*</includes>
+                            <!-- 排除的表 -->
+                            <excludes></excludes>
+                        </database>
+                        <generate>
+                            <!-- Primary key / foreign key relations should be generated and used.
+                                 This is a prerequisite for various advanced features.
+                                 Defaults to true -->
+                            <relations>true</relations>
+
+                            <!-- Generate deprecated code for backwards compatibility
+                                 Defaults to true -->
+                            <deprecated>true</deprecated>
+
+                            <!-- Do not reuse this property. It is deprecated as of jOOQ 3.3.0 -->
+                            <instanceFields>true</instanceFields>
+
+                            <!-- Generate the javax.annotation.Generated annotation to indicate
+                                 jOOQ version used for source code.
+                                 Defaults to true -->
+                            <generatedAnnotation>true</generatedAnnotation>
+
+                            <!-- Generate jOOQ Record classes for type-safe querying. You can
+                                 turn this off, if you don't need "active records" for CRUD
+                                 Defaults to true -->
+                            <records>true</records>
+
+                            <!-- Generate POJOs in addition to Record classes for usage of the
+                                 ResultQuery.fetchInto(Class) API
+                                 Defaults to false -->
+                            <pojos>false</pojos>
+
+                            <!-- Generate immutable POJOs for usage of the ResultQuery.fetchInto(Class) API
+                                 This overrides any value set in <pojos/>
+                                 Defaults to false -->
+                            <immutablePojos>false</immutablePojos>
+
+                            <!-- Generate interfaces that will be implemented by records and/or pojos.
+                                 You can also use these interfaces in Record.into(Class<?>) and similar
+                                 methods, to let jOOQ return proxy objects for them.
+                                 Defaults to false -->
+                            <interfaces>false</interfaces>
+
+                            <!-- Generate DAOs in addition to POJO classes
+                                 Defaults to false -->
+                            <daos>false</daos>
+
+                            <!-- Annotate POJOs and Records with JPA annotations for increased
+                                 compatibility and better integration with JPA/Hibernate, etc
+                                 Defaults to false -->
+                            <jpaAnnotations>false</jpaAnnotations>
+
+                            <!-- Annotate POJOs and Records with JSR-303 validation annotations
+                                 Defaults to false -->
+                            <validationAnnotations>false</validationAnnotations>
+
+                            <!-- Annotate DAOs with useful spring annotations such as @Repository or @Autowired
+                                 Defaults to false -->
+                            <springAnnotations>false</springAnnotations>
+
+                            <!-- Allow to turn off the generation of global object references, which include
+                                 - Tables.java
+                                 - Sequences.java
+                                 - UDTs.java
+                                 Turning off the generation of the above files may be necessary for very
+                                 large schemas, which exceed the amount of allowed constants in a class's
+                                 constant pool (64k) or, whose static initialiser would exceed 64k of
+                                 byte code
+                                 Defaults to true -->
+                            <globalObjectReferences>true</globalObjectReferences>
+
+                            <!-- Generate fluent setters in
+                                 - records
+                                 - pojos
+                                 - interfaces
+                                 Fluent setters are against the JavaBeans specification, but can be quite
+                                 useful to those users who do not depend on EL, JSP, JSF, etc.
+                                 Defaults to false -->
+                            <fluentSetters>false</fluentSetters>
+                        </generate>
+                        <target>
+                            <!--生成代码的包路径-->
+                            <packageName>org.wefine.spring.jooq.db</packageName>
+                            <directory>target/generated-sources</directory>
+                        </target>
+                    </generator>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 
 </project>
