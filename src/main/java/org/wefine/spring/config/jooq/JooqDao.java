@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -212,11 +213,6 @@ public interface JooqDao<R extends TableRecord<R>, P, T> {
     Table<R> getTable();
 
     /**
-     * Get the underlying POJO type
-     */
-    Class<P> getType();
-
-    /**
      * Search with pagination.
      *
      * @param pageable indicate page size, sort, etc
@@ -227,9 +223,9 @@ public interface JooqDao<R extends TableRecord<R>, P, T> {
     /**
      * Search with pagination.
      *
-     * @param searchTerm search condition
+     * @param conditionMap search condition
      * @param pageable   indicate page size, sort, etc
      * @return Pojo's list
      */
-    List<P> search(String searchTerm, Pageable pageable);
+    List<P> search(Map<String, String> conditionMap, Pageable pageable);
 }

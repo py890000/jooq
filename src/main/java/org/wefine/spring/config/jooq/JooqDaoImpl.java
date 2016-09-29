@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -16,7 +17,7 @@ import static org.jooq.impl.DSL.row;
 /**
  * 数据库操作基类.
  * <p>
- * 参考<code>org.jooq.impl.JooqDaoImpl</code>， 而实现的用于在Spring环境下使用的JOOQ_DAO的类。
+ * 参考<code>org.jooq.impl.DaoImpl</code>， 而实现的用于在Spring环境下使用的JOOQ_DAO的类。
  *
  * @author wefine
  */
@@ -24,7 +25,8 @@ import static org.jooq.impl.DSL.row;
 public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements JooqDao<R, P, T> {
 
     private final Table<R> table;
-    private final Class<P> type;
+    private final Class<? extends R> recordClazzType;
+
     @Resource
     protected DSLContext dsl;
     private RecordMapper<R, P> mapper;
@@ -32,12 +34,12 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
     // -------------------------------------------------------------------------
     // XXX: Constructors and initialisation
     // -------------------------------------------------------------------------
-    protected JooqDaoImpl(Table<R> table, Class<P> type, DSLContext dsl) {
+    protected JooqDaoImpl(Table<R> table, Class<P> pojoClazz, DSLContext dsl) {
         this.table = table;
-        this.type = type;
+        this.recordClazzType = table.getRecordType();
         this.dsl = dsl;
 
-        this.mapper = dsl.configuration().recordMapperProvider().provide(table.recordType(), type);
+        this.mapper = dsl.configuration().recordMapperProvider().provide(table.recordType(), pojoClazz);
     }
 
     /**
@@ -228,15 +230,6 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
         return table;
     }
 
-    // ------------------------------------------------------------------------
-    // XXX: Template methods for generated subclasses
-    // ------------------------------------------------------------------------
-
-    @Override
-    public /* non-final */ Class<P> getType() {
-        return type;
-    }
-
 
     // ------------------------------------------------------------------------
     // XXX: Private utility methods
@@ -301,32 +294,33 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
     }
 
     @Override
-    public List<P> search(String searchTerm, Pageable pageable) {
+    public List<P> search(Map<String, String> conditionMap, Pageable pageable) {
         log.info("Finding {} todo entries for page {} by using search term: {}",
                 pageable.getPageSize(),
                 pageable.getPageNumber(),
-                searchTerm
+                conditionMap
         );
 
-        if (searchTerm != null) {
-            searchTerm = searchTerm.trim();
+        Optional<Condition> condition = createWhereConditions(conditionMap);
 
-        }
-        String likeExpression = "%" + searchTerm + "%";
+        SelectConnectByStep<R> step =
+                condition.isPresent() ? dsl.selectFrom(table).where(condition.get()) : dsl.selectFrom(table);
 
-        List<R> queryResults = dsl.selectFrom(table)
-                .where(createWhereConditions(likeExpression))
-                .orderBy(getSortFields(pageable.getSort()))
-                .limit(pageable.getPageSize()).offset(pageable.getOffset())
-                .fetchInto(R);
-
-        return null;
+        return step.orderBy(getSortFields(pageable.getSort()))
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetchInto(recordClazzType)
+                .stream()
+                .map(r -> mapper.map(r))
+                .collect(Collectors.toList());
     }
 
 
-    private Condition createWhereConditions(String likeExpression) {
-        return table.DESCRIPTION.likeIgnoreCase(likeExpression)
-                .or(table.TITLE.likeIgnoreCase(likeExpression));
+    private Optional<Condition> createWhereConditions(Map<String, String> conditionMap) {
+
+        return conditionMap.keySet().stream()
+                .map(key -> getTableField(key).likeIgnoreCase("%" + conditionMap.get(key) + "%"))
+                .reduce(Condition::and);
     }
 
     private Collection<SortField<?>> getSortFields(Sort sortSpecification) {
@@ -338,11 +332,7 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
             return querySortFields;
         }
 
-        Iterator<Sort.Order> specifiedFields = sortSpecification.iterator();
-
-        while (specifiedFields.hasNext()) {
-            Sort.Order specifiedField = specifiedFields.next();
-
+        for (Sort.Order specifiedField : sortSpecification) {
             String sortFieldName = specifiedField.getProperty();
             Sort.Direction sortDirection = specifiedField.getDirection();
             log.debug("Getting sort field with name: {} and direction: {}", sortFieldName, sortDirection);
@@ -355,17 +345,16 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
         return querySortFields;
     }
 
-    private TableField getTableField(String sortFieldName) {
-        TableField sortField = null;
+    private TableField getTableField(String fieldName) {
+        TableField tableField;
         try {
-            java.lang.reflect.Field tableField = table.getClass().getField(sortFieldName);
-            sortField = (TableField) tableField.get(table);
+            tableField = (TableField) table.getClass().getField(fieldName).get(table);
         } catch (NoSuchFieldException | IllegalAccessException ex) {
-            String errorMessage = String.format("Could not find table field: {}", sortFieldName);
+            String errorMessage = String.format("Could not find table field: {%s}", fieldName);
             throw new InvalidDataAccessApiUsageException(errorMessage, ex);
         }
 
-        return sortField;
+        return tableField;
     }
 
 
