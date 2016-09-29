@@ -73,6 +73,11 @@
             <version>${jooq.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
@@ -336,7 +341,7 @@
                             <!-- Generate POJOs in addition to Record classes for usage of the
                                  ResultQuery.fetchInto(Class) API
                                  Defaults to false -->
-                            <pojos>false</pojos>
+                            <pojos>true</pojos>
 
                             <!-- Generate immutable POJOs for usage of the ResultQuery.fetchInto(Class) API
                                  This overrides any value set in <pojos/>
