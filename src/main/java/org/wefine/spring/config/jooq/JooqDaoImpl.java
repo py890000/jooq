@@ -1,12 +1,13 @@
 package org.wefine.spring.config.jooq;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -19,6 +20,7 @@ import static org.jooq.impl.DSL.row;
  *
  * @author wefine
  */
+@Slf4j
 public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements JooqDao<R, P, T> {
 
     private final Table<R> table;
@@ -291,5 +293,87 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
         }
 
         return result;
+    }
+
+    @Override
+    public List<P> search(Pageable pageable) {
+        return search(null, pageable);
+    }
+
+    @Override
+    public List<P> search(String searchTerm, Pageable pageable) {
+        log.info("Finding {} todo entries for page {} by using search term: {}",
+                pageable.getPageSize(),
+                pageable.getPageNumber(),
+                searchTerm
+        );
+
+        if (searchTerm != null) {
+            searchTerm = searchTerm.trim();
+
+        }
+        String likeExpression = "%" + searchTerm + "%";
+
+        List<R> queryResults = dsl.selectFrom(table)
+                .where(createWhereConditions(likeExpression))
+                .orderBy(getSortFields(pageable.getSort()))
+                .limit(pageable.getPageSize()).offset(pageable.getOffset())
+                .fetchInto(R);
+
+        return null;
+    }
+
+
+    private Condition createWhereConditions(String likeExpression) {
+        return table.DESCRIPTION.likeIgnoreCase(likeExpression)
+                .or(table.TITLE.likeIgnoreCase(likeExpression));
+    }
+
+    private Collection<SortField<?>> getSortFields(Sort sortSpecification) {
+        log.debug("Getting sort fields from sort specification: {}", sortSpecification);
+        Collection<SortField<?>> querySortFields = new ArrayList<>();
+
+        if (sortSpecification == null) {
+            log.debug("No sort specification found. Returning empty collection -> no sorting is done.");
+            return querySortFields;
+        }
+
+        Iterator<Sort.Order> specifiedFields = sortSpecification.iterator();
+
+        while (specifiedFields.hasNext()) {
+            Sort.Order specifiedField = specifiedFields.next();
+
+            String sortFieldName = specifiedField.getProperty();
+            Sort.Direction sortDirection = specifiedField.getDirection();
+            log.debug("Getting sort field with name: {} and direction: {}", sortFieldName, sortDirection);
+
+            TableField tableField = getTableField(sortFieldName);
+            SortField<?> querySortField = convertTableFieldToSortField(tableField, sortDirection);
+            querySortFields.add(querySortField);
+        }
+
+        return querySortFields;
+    }
+
+    private TableField getTableField(String sortFieldName) {
+        TableField sortField = null;
+        try {
+            java.lang.reflect.Field tableField = table.getClass().getField(sortFieldName);
+            sortField = (TableField) tableField.get(table);
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            String errorMessage = String.format("Could not find table field: {}", sortFieldName);
+            throw new InvalidDataAccessApiUsageException(errorMessage, ex);
+        }
+
+        return sortField;
+    }
+
+
+    private SortField<?> convertTableFieldToSortField(TableField tableField, Sort.Direction sortDirection) {
+        if (sortDirection == Sort.Direction.ASC) {
+            return tableField.asc();
+        } else {
+            return tableField.desc();
+        }
     }
 }

@@ -2,6 +2,7 @@ package org.wefine.spring.config.jooq;
 
 import org.jooq.*;
 import org.jooq.exception.DataAccessException;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -214,4 +215,21 @@ public interface JooqDao<R extends TableRecord<R>, P, T> {
      * Get the underlying POJO type
      */
     Class<P> getType();
+
+    /**
+     * Search with pagination.
+     *
+     * @param pageable indicate page size, sort, etc
+     * @return Pojo's list
+     */
+    List<P> search(Pageable pageable);
+
+    /**
+     * Search with pagination.
+     *
+     * @param searchTerm search condition
+     * @param pageable   indicate page size, sort, etc
+     * @return Pojo's list
+     */
+    List<P> search(String searchTerm, Pageable pageable);
 }
