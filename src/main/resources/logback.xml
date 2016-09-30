@@ -24,6 +24,7 @@
     </appender>
 
     <logger name="org.springframework.web" level="info"/>
+    <logger name="org.jooq.tools" level="debug"/>
 
     <root level="info">
         <appender-ref ref="console"/>

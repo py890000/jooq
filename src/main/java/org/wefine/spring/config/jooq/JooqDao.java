@@ -221,11 +221,11 @@ public interface JooqDao<R extends TableRecord<R>, P, T> {
     List<P> search(Pageable pageable);
 
     /**
-     * Search with pagination.
+     * Search with pagination, and condition.
      *
-     * @param conditionMap search condition
      * @param pageable   indicate page size, sort, etc
+     * @param conditionMap search condition
      * @return Pojo's list
      */
-    List<P> search(Map<String, String> conditionMap, Pageable pageable);
+    List<P> search(Pageable pageable, Map<String, Object> conditionMap);
 }

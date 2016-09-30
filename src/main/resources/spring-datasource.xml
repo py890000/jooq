@@ -71,5 +71,15 @@
                 </bean>
             </array>
         </property>
+        <property name="settings">
+            <bean class="org.jooq.conf.Settings">
+                <!-- format sql -->
+                <property name="renderFormatted" value="true"/>
+                <!-- print sql-->
+                <property name="executeLogging" value="true"/>
+                <!-- render name style, Defaults to "QUOTED"-->
+                <property name="renderNameStyle" value="AS_IS"/>
+            </bean>
+        </property>
     </bean>
 </beans>

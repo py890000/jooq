@@ -1,4 +1,4 @@
-package org.wefine.spring.web.dao;
+package org.wefine.spring.dao;
 
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;

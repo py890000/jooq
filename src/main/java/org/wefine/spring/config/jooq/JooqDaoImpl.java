@@ -290,12 +290,12 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
 
     @Override
     public List<P> search(Pageable pageable) {
-        return search(null, pageable);
+        return search(pageable, null);
     }
 
     @Override
-    public List<P> search(Map<String, String> conditionMap, Pageable pageable) {
-        log.info("Finding {} todo entries for page {} by using search term: {}",
+    public List<P> search(Pageable pageable, Map<String, Object> conditionMap) {
+        log.info("Try to find {} entries for page {} by using search term: {}",
                 pageable.getPageSize(),
                 pageable.getPageNumber(),
                 conditionMap
@@ -316,10 +316,23 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
     }
 
 
-    private Optional<Condition> createWhereConditions(Map<String, String> conditionMap) {
+    @SuppressWarnings({"unchecked"})
+    private Optional<Condition> createWhereConditions(Map<String, Object> conditionMap) {
+        if (conditionMap == null) {
+            return Optional.empty();
+        }
 
         return conditionMap.keySet().stream()
-                .map(key -> getTableField(key).likeIgnoreCase("%" + conditionMap.get(key) + "%"))
+                .map(key -> {
+                    Condition condition;
+                    TableField field = getTableField(key);
+                    if (field.getDataType().getType() == String.class) {
+                        condition = field.like("%" + conditionMap.get(key) + "%");
+                    } else {
+                        condition = field.eq(conditionMap.get(key));
+                    }
+                    return condition;
+                })
                 .reduce(Condition::and);
     }
 
@@ -342,13 +355,21 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
             querySortFields.add(querySortField);
         }
 
+        if (querySortFields.size() == 0) {
+            // if no sort field specified, use pk.
+            querySortFields = table.getPrimaryKey().getFields()
+                    .stream()
+                    .map(Field::asc)
+                    .collect(Collectors.toList());
+        }
+
         return querySortFields;
     }
 
     private TableField getTableField(String fieldName) {
         TableField tableField;
         try {
-            tableField = (TableField) table.getClass().getField(fieldName).get(table);
+            tableField = (TableField) table.getClass().getField(fieldName.toUpperCase()).get(table);
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             String errorMessage = String.format("Could not find table field: {%s}", fieldName);
             throw new InvalidDataAccessApiUsageException(errorMessage, ex);
