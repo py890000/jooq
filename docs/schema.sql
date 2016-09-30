@@ -22,14 +22,14 @@ CREATE TABLE posts (
   DEFAULT CHARSET = utf8;
 
 CREATE TABLE comments (
-  ID         INT(11)      NOT NULL AUTO_INCREMENT,
-  POST_ID    INT(11)      NOT NULL,
-  NAME       VARCHAR(200) NOT NULL,
-  EMAIL      VARCHAR(200) NOT NULL,
-  CONTENT    LONGTEXT              DEFAULT NULL,
-  CREATED_ON DATETIME              DEFAULT NULL,
-  PRIMARY KEY (ID),
-  FOREIGN KEY (POST_ID) REFERENCES posts (id)
+  id         INT(11)      NOT NULL AUTO_INCREMENT,
+  post_id    INT(11)      NOT NULL,
+  name       VARCHAR(200) NOT NULL,
+  email      VARCHAR(200) NOT NULL,
+  content    LONGTEXT              DEFAULT NULL,
+  created_on DATETIME              DEFAULT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (post_id) REFERENCES posts (id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;

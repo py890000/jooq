@@ -4,18 +4,14 @@ import org.jooq.DSLContext;
 import org.jooq.Record3;
 import org.jooq.Result;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.wefine.spring.config.core.SpringMvcConfig;
-import org.wefine.spring.config.core.SpringRootConfig;
+import org.wefine.spring.AbstractSpringTest;
 import org.wefine.spring.jooq.tables.Author;
 import org.wefine.spring.jooq.tables.Book;
 import org.wefine.spring.jooq.tables.BookStore;
 import org.wefine.spring.jooq.tables.BookToBookStore;
 import org.wefine.spring.jooq.tables.records.BookRecord;
+
+import javax.annotation.Resource;
 
 import static java.util.Arrays.asList;
 import static org.jooq.impl.DSL.countDistinct;
@@ -25,16 +21,9 @@ import static org.wefine.spring.jooq.tables.Book.BOOK;
 import static org.wefine.spring.jooq.tables.BookStore.BOOK_STORE;
 import static org.wefine.spring.jooq.tables.BookToBookStore.BOOK_TO_BOOK_STORE;
 
-@RunWith(SpringRunner.class)
-@WebAppConfiguration
-@ContextConfiguration(classes = {
-        SpringRootConfig.class,
-        SpringMvcConfig.class
-})
-public class BookStoreQueryTest {
-
-    @Autowired
-    DSLContext create;
+public class BookStoreQueryTest extends AbstractSpringTest {
+    @Resource
+    private DSLContext dsl;
 
     @Test
     public void testJoin() throws Exception {
@@ -45,7 +34,7 @@ public class BookStoreQueryTest {
         BookToBookStore t = BOOK_TO_BOOK_STORE.as("t");
 
         Result<Record3<String, String, Integer>> result =
-                create.select(a.FIRST_NAME, a.LAST_NAME, countDistinct(s.NAME))
+                dsl.select(a.FIRST_NAME, a.LAST_NAME, countDistinct(s.NAME))
                         .from(a)
                         .join(b).on(b.AUTHOR_ID.equal(a.ID))
                         .join(t).on(t.BOOK_ID.equal(b.ID))
@@ -67,7 +56,7 @@ public class BookStoreQueryTest {
 
     @Test
     public void testActiveRecords() throws Exception {
-        Result<BookRecord> result = create.selectFrom(BOOK).orderBy(BOOK.ID).fetch();
+        Result<BookRecord> result = dsl.selectFrom(BOOK).orderBy(BOOK.ID).fetch();
 
         assertEquals(4, result.size());
         assertEquals(asList(1, 2, 3, 4), result.getValues(0));

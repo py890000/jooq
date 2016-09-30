@@ -46,6 +46,17 @@ public class BlogService {
         return posts;
     }
 
+    public List<Post> getAllPosts2() {
+        List<Post> posts = new ArrayList<>();
+        List<PostsRecord> queryResults = dsl.selectFrom(POSTS).fetchInto(PostsRecord.class);
+
+        Result<Record> result = dsl.select().from(POSTS).fetch();
+        for (Record r : result) {
+            posts.add(getPostEntity(r));
+        }
+        return posts;
+    }
+
     public Post getPost(Integer postId) {
         Record record = dsl.select().
                 from(POSTS)

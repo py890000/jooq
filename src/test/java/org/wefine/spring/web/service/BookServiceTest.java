@@ -4,42 +4,30 @@ import org.jooq.DSLContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.wefine.spring.config.core.SpringMvcConfig;
-import org.wefine.spring.config.core.SpringRootConfig;
+import org.wefine.spring.AbstractSpringTest;
 import org.wefine.spring.config.jooq.SpringTransactionProvider;
 
+import javax.annotation.Resource;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.wefine.spring.jooq.tables.Book.BOOK;
 
-@RunWith(SpringRunner.class)
-@WebAppConfiguration
-@ContextConfiguration(classes = {
-        SpringRootConfig.class,
-        SpringMvcConfig.class
-})
-//@TransactionConfiguration(transactionManager = "transactionManager")
-public class BookServiceTest {
+public class BookServiceTest extends AbstractSpringTest {
 
-    @Autowired
-    DSLContext dsl;
-    @Autowired
-    DataSourceTransactionManager txMgr;
-    @Autowired
-    SpringTransactionProvider txProvider;
-    @Autowired
-    BookService books;
+    @Resource
+    private DSLContext dsl;
+    @Resource
+    private DataSourceTransactionManager txMgr;
+    @Resource
+    private SpringTransactionProvider txProvider;
+    @Resource
+    private BookService books;
 
     @After
     public void teardown() {
