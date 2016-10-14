@@ -327,8 +327,10 @@ public abstract class JooqDaoImpl<R extends UpdatableRecord<R>, P, T> implements
                     Condition condition;
                     TableField field = getTableField(key);
                     if (field.getDataType().getType() == String.class) {
+                        // 字符串类型使用部分匹配
                         condition = field.like("%" + conditionMap.get(key) + "%");
                     } else {
+                        // 非字符串类型采用相等匹配
                         condition = field.eq(conditionMap.get(key));
                     }
                     return condition;
